@@ -1,5 +1,3 @@
-import { getLevelLabel } from './onboardingDisplay';
-
 export function resolveDisplayRank(profilesRow: any, agorasRankText: string | null | undefined) {
   const kyu = profilesRow?.kyu_level;
   if (typeof kyu === 'number' && !Number.isNaN(kyu)) {
@@ -40,18 +38,6 @@ export function resolveDisplayRank(profilesRow: any, agorasRankText: string | nu
         source: 'agoras_rank',
       };
     }
-  }
-
-  const ob = profilesRow?.current_level ?? profilesRow?.onboarding_level;
-  if (ob) {
-    return {
-      primaryLabel: getLevelLabel(String(ob)),
-      detail: 'Anket — seviye aralığı (tek başına Kyu yerine geçmez)',
-      nextRank: '—',
-      masterPercent: null,
-      showMasterBar: false,
-      source: 'onboarding_only',
-    };
   }
 
   return {

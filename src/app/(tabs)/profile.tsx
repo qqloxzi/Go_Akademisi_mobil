@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator, ScrollView, Platform, Alert, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LogOut, ArrowRight, Trash2, ShieldCheck, Sun, Moon, SmartphoneIcon } from 'lucide-react-native';
+import { LogOut, ArrowRight, Trash2, ShieldCheck, Sun, Moon, SmartphoneIcon, Globe2 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
-import { useOnboarding } from '@/context/OnboardingContext';
 import { useSettings, type ThemeMode } from '@/context/SettingsContext';
 import { signInWithGoogle } from '@/lib/google-sign-in';
 import { GoogleIcon } from '@/components/google-icon';
@@ -14,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { Eyebrow } from '@/components/ui/eyebrow';
 import { ProfileSummaryCard } from '@/components/profile-summary-card';
 import { LEGAL_LINKS } from '@/constants/socialLinks';
+import { OGS_GROUP_URL } from '@/lib/onlineLeague';
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: typeof Sun }[] = [
   { value: 'light', label: 'Açık', Icon: Sun },
@@ -71,15 +71,13 @@ function ActionCard({
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
-  const { isInitialized, resetOnboarding } = useOnboarding();
+  const { user, loading } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   const onSignOut = async () => {
     setSigningOut(true);
     await supabase.auth.signOut();
-    resetOnboarding();
     setSigningOut(false);
   };
 
@@ -96,7 +94,6 @@ export default function ProfileScreen() {
     try {
       const { error } = await supabase.rpc('delete_user');
       if (error) throw error;
-      resetOnboarding();
       await supabase.auth.signOut();
     } catch (err: any) {
       const msg = err?.message || 'Bilinmeyen hata';
@@ -121,7 +118,7 @@ export default function ProfileScreen() {
     );
   };
 
-  if (!isInitialized) {
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-ice-white dark:bg-dark-bg">
         <ActivityIndicator size="large" color="#2E9FE0" />
@@ -184,6 +181,12 @@ export default function ProfileScreen() {
           className="flex-row items-center gap-2 py-2.5 active:opacity-70">
           <ShieldCheck size={16} color="#9AA0AC" />
           <Text className="text-sm font-semibold text-ink/60">Gizlilik Politikası</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => Linking.openURL(OGS_GROUP_URL)}
+          className="flex-row items-center gap-2 py-2.5 active:opacity-70">
+          <Globe2 size={16} color="#9AA0AC" />
+          <Text className="text-sm font-semibold text-ink/60">OGS Topluluk Grubumuz</Text>
         </Pressable>
         <Pressable onPress={handleDeleteAccount} className="flex-row items-center gap-2 py-2.5 active:opacity-70">
           <Trash2 size={16} color="#D6564F" />

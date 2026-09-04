@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Pressable } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
-import { extractProfileDisplayFields, fetchProfileOnboarding } from '@/lib/profileOnboarding';
+import { extractProfileDisplayFields, fetchProfileRow } from '@/lib/profileFields';
 import { resolveDisplayRank } from '@/utils/profileDisplay';
 import { fetchCurriculum, flattenLessons, type Course } from '@/lib/education/fetchCurriculum';
 import {
@@ -38,13 +38,13 @@ export function ProfileSummaryCard() {
     (async () => {
       setLoading(true);
       const [{ data: profRow }, leagueRes] = await Promise.all([
-        fetchProfileOnboarding(supabase, user.id),
+        fetchProfileRow(supabase, user.id),
         supabase.from('league_registrations').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ]);
       if (cancelled) return;
 
       const fields = extractProfileDisplayFields(profRow);
-      setDisplayName(fields.preferredName || fields.username || user.email?.split('@')[0] || 'Oyuncu');
+      setDisplayName(fields.username || user.email?.split('@')[0] || 'Oyuncu');
       setRankInfo(resolveDisplayRank(profRow, fields.rank));
       setTokens(fields.tokens ?? 0);
       setHearts(fields.hearts ?? 0);
