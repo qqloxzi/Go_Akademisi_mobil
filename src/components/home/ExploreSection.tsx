@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CalendarDays, Newspaper, Users, Mail, GraduationCap, BarChart3 } from 'lucide-react-native';
+import { CalendarDays, Newspaper, Users, Mail, GraduationCap, BarChart3, Globe } from 'lucide-react-native';
 import { Eyebrow } from '@/components/ui/eyebrow';
 import { Card } from '@/components/ui/card';
 
@@ -8,6 +8,7 @@ const LINKS = [
   { label: 'Atölyeler', description: 'Beceri ağacında kendi hızında ilerle.', href: '/(tabs)/atolyeler', Icon: GraduationCap, color: '#1E3A5F' },
   { label: 'Liderlik', description: 'XP sıralamasında yerini gör.', href: '/(tabs)/liderlik', Icon: BarChart3, color: '#8B5CF6' },
   { label: 'Fikstür', description: 'Güncel puan durumu ve maç eşleşmeleri.', href: '/fikstur', Icon: CalendarDays, color: '#2E9FE0' },
+  { label: 'Agora Online Ligi', description: 'Ücretsiz, OGS üzerinden açık kayıt lig.', href: '/online-lig', Icon: Globe, color: '#2E9FE0' },
   { label: 'Blog', description: 'Go üzerine yazılar ve haberler.', href: '/blog', Icon: Newspaper, color: '#4C9A6A' },
   { label: 'Eğitmenler', description: 'Agora eğitmen kadrosuyla tanış.', href: '/instructor', Icon: Users, color: '#D9A83B' },
   { label: 'İletişim', description: 'Sorularını doğrudan bize ulaştır.', href: '/contact', Icon: Mail, color: '#D6564F' },

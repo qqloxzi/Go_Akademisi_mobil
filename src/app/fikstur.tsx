@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowRight, Globe } from 'lucide-react-native';
 import { fallbackLeagueData, fetchLeagueData, type League, type LeagueMatch } from '@/data/leagueData';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Card } from '@/components/ui/card';
@@ -21,6 +23,7 @@ function getPlayerName(league: League, playerId: string): string {
 
 export default function FiksturScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [leagues, setLeagues] = useState<League[]>(fallbackLeagueData);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -50,6 +53,21 @@ export default function FiksturScreen() {
       contentContainerStyle={{ paddingTop: insets.top + 18, paddingHorizontal: 20, paddingBottom: insets.bottom + 36 }}
       showsVerticalScrollIndicator={false}>
       <ScreenHeader title="Fikstür" subtitle="Güncel puan durumu ve maç sonuçları" />
+
+      <Pressable onPress={() => router.push('/online-lig')} className="active:opacity-90 mb-5">
+        <View className="rounded-2xl bg-primary-blue p-4 flex-row items-center gap-3.5">
+          <View className="w-10 h-10 rounded-full bg-white/15 items-center justify-center">
+            <Globe size={18} color="#fff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm text-white" style={{ fontFamily: 'PlusJakartaSans-Bold' }}>
+              Agora Online Ligi
+            </Text>
+            <Text className="text-xs text-white/70 mt-0.5">Bu ligden bağımsız, ücretsiz ve herkese açık</Text>
+          </View>
+          <ArrowRight size={16} color="#fff" />
+        </View>
+      </Pressable>
 
       {isLoading ? (
         <Card className="p-6 items-center mb-5">

@@ -15,6 +15,7 @@ export type InstructorProfile = {
   email: string;
   about: string;
   courses: InstructorCourse[];
+  privateLessons?: boolean;
 };
 
 export const instructorsData: InstructorProfile[] = [
@@ -27,6 +28,7 @@ export const instructorsData: InstructorProfile[] = [
     email: 'tugkan@agorago.com',
     about: 'Go alanında 15 yılı aşkın tecrübeye sahiptir ve Türkiye Go Milli Takımı oyuncusudur.',
     courses: [{ title: 'Aydınlanma Ligi', slug: 'aydinlanma', level: '5–1 Kyu' }],
+    privateLessons: true,
   },
   {
     id: 'oguzerdogan',
@@ -37,6 +39,7 @@ export const instructorsData: InstructorProfile[] = [
     email: 'oguz@agorago.com',
     about: "4 yıldır go oynuyor. Hem Goizm'de hem de İytego'da başkanlık yapmış ve hâlâ İytego'da aktif eğitimler veriyor.",
     courses: [{ title: 'Gelişim Ligi', slug: 'gelisim', level: '11–6 Kyu' }],
+    privateLessons: true,
   },
   {
     id: 'alikarakaya',
@@ -47,6 +50,7 @@ export const instructorsData: InstructorProfile[] = [
     email: 'ali@agorago.com',
     about: "2 yıllık Go deneyimiyle Ali, Goizm ve İyitego topluluklarında aktif rol almakta ve özellikle başlangıç seviyesindeki oyuncuların sağlam bir temel oluşturmasına odaklanmaktadır.",
     courses: [{ title: 'Temel Taşlar Ligi', slug: 'temel-taslar', level: '17–12 Kyu' }],
+    privateLessons: true,
   },
   {
     id: 'doganergezen',
