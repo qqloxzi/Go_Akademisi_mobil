@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { House, GraduationCap, Trophy, BarChart3, CircleUserRound } from 'lucide-react-native';
+import { House, GraduationCap, Trophy, CircleUserRound } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
 export default function TabLayout() {
@@ -43,7 +43,7 @@ export default function TabLayout() {
         name="liderlik"
         options={{
           title: 'Liderlik',
-          tabBarIcon: ({ color, size }) => <BarChart3 color={color} size={size} />,
+          href: null,
         }}
       />
       <Tabs.Screen

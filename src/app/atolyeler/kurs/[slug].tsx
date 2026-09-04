@@ -163,7 +163,6 @@ function LessonContent({
     }
   }, [lesson.id, completed, onSolvedStateChange]);
 
-  const shakeAnim = useRef(new Animated.Value(0)).current;
   const correctOpacity = useRef(new Animated.Value(0)).current;
   const wrongOpacity = useRef(new Animated.Value(0)).current;
   const [feedbackType, setFeedbackType] = useState<'correct' | 'wrong' | null>(null);
@@ -179,23 +178,14 @@ function LessonContent({
   }, [correctOpacity]);
 
   const triggerWrong = useCallback(() => {
-    shakeAnim.setValue(0);
-    wrongOpacity.setValue(1);
+    wrongOpacity.setValue(0);
     setFeedbackType('wrong');
-    Animated.parallel([
-      Animated.sequence([
-        Animated.timing(shakeAnim, { toValue: 9, duration: 55, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: -9, duration: 55, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: 7, duration: 55, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: -7, duration: 55, useNativeDriver: true }),
-        Animated.timing(shakeAnim, { toValue: 0, duration: 55, useNativeDriver: true }),
-      ]),
-      Animated.sequence([
-        Animated.delay(420),
-        Animated.timing(wrongOpacity, { toValue: 0, duration: 220, useNativeDriver: true }),
-      ]),
+    Animated.sequence([
+      Animated.timing(wrongOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
+      Animated.delay(750),
+      Animated.timing(wrongOpacity, { toValue: 0, duration: 280, useNativeDriver: true }),
     ]).start(() => setFeedbackType(null));
-  }, [shakeAnim, wrongOpacity]);
+  }, [wrongOpacity]);
 
   const handleSolveCorrect = useCallback(() => {
     triggerCorrect();
@@ -231,11 +221,7 @@ function LessonContent({
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
-      <Animated.View
-        style={[
-          { alignItems: 'center', paddingHorizontal: 12, paddingTop: isShortScreen ? 6 : 10 },
-          { transform: [{ translateX: shakeAnim }] },
-        ]}>
+      <View style={{ alignItems: 'center', paddingHorizontal: 12, paddingTop: isShortScreen ? 6 : 10 }}>
         <View style={{ alignSelf: 'stretch', marginBottom: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
             <Text
@@ -281,19 +267,55 @@ function LessonContent({
         </View>
 
         {lesson.problem && (
-          <GoBoard
-            size={boardSize}
-            boardSizePx={boardPx}
-            initialState={lesson.problem.initialState}
-            startTurn={initialTurn}
-            problem={lesson.problem}
-            onSolve={handleSolveCorrect}
-            onWrong={handleWrong}
-            onNodeChange={handleNodeChange}
-            hideTurnIndicator
-          />
+          <View style={{ position: 'relative' }}>
+            <GoBoard
+              size={boardSize}
+              boardSizePx={boardPx}
+              initialState={lesson.problem.initialState}
+              startTurn={initialTurn}
+              problem={lesson.problem}
+              onSolve={handleSolveCorrect}
+              onWrong={handleWrong}
+              onNodeChange={handleNodeChange}
+              hideTurnIndicator
+            />
+
+            {feedbackType === 'correct' && (
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: boardPx,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: correctOpacity,
+                }}>
+                <Check size={56} color="#4C9A6A" strokeWidth={3} />
+              </Animated.View>
+            )}
+
+            {feedbackType === 'wrong' && (
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: boardPx,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: wrongOpacity,
+                }}>
+                <X size={56} color="#D6564F" strokeWidth={3} />
+              </Animated.View>
+            )}
+          </View>
         )}
-      </Animated.View>
+      </View>
 
       <ScrollView
         style={{ flex: 1 }}
@@ -329,68 +351,6 @@ function LessonContent({
           </View>
         ) : null}
       </ScrollView>
-
-      {feedbackType === 'correct' && (
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: correctOpacity,
-            pointerEvents: 'none',
-          }}>
-          <View
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: 44,
-              backgroundColor: 'rgba(76,154,106,0.93)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#4C9A6A',
-              shadowOpacity: 0.45,
-              shadowRadius: 16,
-              elevation: 8,
-            }}>
-            <Check size={52} color="#fff" />
-          </View>
-        </Animated.View>
-      )}
-
-      {feedbackType === 'wrong' && (
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: wrongOpacity,
-            pointerEvents: 'none',
-          }}>
-          <View
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: 44,
-              backgroundColor: 'rgba(214,86,79,0.90)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#D6564F',
-              shadowOpacity: 0.4,
-              shadowRadius: 14,
-              elevation: 8,
-            }}>
-            <X size={52} color="#fff" />
-          </View>
-        </Animated.View>
-      )}
     </View>
   );
 }

@@ -7,7 +7,7 @@
  * Render: react-native-svg (Canvas API yok)
  * Geometri: goBoardLayout.js (aynı kaynak)
  */
-import { Ionicons } from '@expo/vector-icons';
+import { Lightbulb, Play, RotateCcw } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAudioPlayer } from 'expo-audio';
 import {
@@ -400,6 +400,7 @@ export default function GoBoard({
   const [currentNode, setCurrentNode] = useState<any>(initState.currentNode);
   const [statusMsg, setStatusMsg] = useState<string>('');
   const solvedRef = useRef(false);
+  const [solved, setSolved] = useState(false);
   const [hintPos, setHintPos] = useState<{ x: number; y: number } | null>(null);
   const [pausePhase, setPausePhase] = useState<'beforeOpponent' | 'afterOpponent' | null>(null);
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -488,6 +489,7 @@ export default function GoBoard({
       } else if (oppNode.status === 'correct' || !oppNode.children?.length) {
         // Leaf node — doğru çözüm
         solvedRef.current = true;
+        setSolved(true);
         onSolve?.();
         setStatusMsg(statusForNode(oppNode.comment, 'Doğru.'));
       }
@@ -595,6 +597,7 @@ export default function GoBoard({
 
         if ((matched.status === 'correct' && isLeaf) || (!matched.status && isLeaf)) {
           solvedRef.current = true;
+          setSolved(true);
           onSolve?.();
           setStatusMsg(statusForNode(matched.comment, 'Doğru.'));
           return;
@@ -629,22 +632,7 @@ export default function GoBoard({
     [handleBoardTap]
   );
 
-  /* Geri al */
-  const undo = useCallback(() => {
-    if (boardHistory.length === 0) return;
-    const prevSnapshot = boardHistory[boardHistory.length - 1]!;
-    setGrid(JSON.parse(prevSnapshot));
-    setBoardHistory(h => h.slice(0, -1));
-    setTurn(t => (t === 'black' ? 'white' : 'black'));
-    setLastMove(null);
-    setStatusMsg('');
-    setHintPos(null);
-    setPausePhase(null);
-    setPendingOpponent(null);
-    solvedRef.current = false;
-  }, [boardHistory]);
-
-  /* Sıfırla — fast-forward başlangıç pozisyonuna dön */
+  /* Baştan başla — fast-forward başlangıç pozisyonuna dön */
   const reset = useCallback(() => {
     setGrid(initState.grid);
     setBoardHistory(initState.history);
@@ -656,6 +644,7 @@ export default function GoBoard({
     setPausePhase(null);
     setPendingOpponent(null);
     solvedRef.current = false;
+    setSolved(false);
   }, [initState]);
 
   /* ── SVG ── */
@@ -694,6 +683,11 @@ export default function GoBoard({
       setStatusMsg('İpucu gösteriliyor.');
     }
   }, [currentNode]);
+
+  const hasHintAvailable = useMemo(
+    () => (currentNode?.children ?? []).some((node: any) => Number.isInteger(node?.x) && Number.isInteger(node?.y)),
+    [currentNode]
+  );
 
   const tone = statusMsg ? statusTone(statusMsg) : 'info';
 
@@ -880,44 +874,48 @@ export default function GoBoard({
         )}
       </View>
 
-      {/* Kontrol çubuğu — width locked to board so RN centers under the grid */}
+      {/* Kontrol çubuğu — web'deki sade metin+ikon linkleriyle aynı yapı */}
       {!readOnly && (
         <View style={styles.controlsRow}>
           {!hideTurnIndicator && (
-            <View style={styles.turnBadge}>
-              <View style={[
-                styles.turnStone,
-                { backgroundColor: turn === 'black' ? COURSE_BRAND.ink : '#f5f0e8' },
-              ]} />
-              <Text style={styles.turnText}>
-                {turn === 'black' ? 'Siyah' : 'Beyaz'} oynuyor
-              </Text>
+            <View style={styles.turnIndicator}>
+              {solved ? (
+                <Text style={styles.turnTextSolved}>Sıra tamamlandı</Text>
+              ) : (
+                <>
+                  <View
+                    style={[
+                      styles.turnDot,
+                      { backgroundColor: turn === 'black' ? COURSE_BRAND.ink : '#f5f0e8' },
+                    ]}
+                  />
+                  <Text style={styles.turnText}>
+                    {turn === 'black' ? 'Siyah' : 'Beyaz'} oynuyor
+                  </Text>
+                </>
+              )}
             </View>
           )}
           <View style={styles.controlGroup}>
-            <Pressable
-              onPress={undo}
-              accessibilityLabel="Geri al"
-              hitSlop={4}
-              style={({ pressed }) => [styles.controlButton, pressed && styles.controlButtonPressed]}
-            >
-              <Ionicons name="arrow-undo-outline" size={22} color={COURSE_BRAND.primary} />
-            </Pressable>
+            {hasHintAvailable && !solved && (
+              <Pressable
+                onPress={showHint}
+                accessibilityLabel="İpucu"
+                hitSlop={8}
+                style={({ pressed }) => [styles.linkButton, pressed && styles.linkButtonPressed]}
+              >
+                <Lightbulb size={14} color={COURSE_BRAND.accent} />
+                <Text style={[styles.linkButtonText, { color: COURSE_BRAND.accent }]}>İpucu</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={reset}
-              accessibilityLabel="Sıfırla"
-              hitSlop={4}
-              style={({ pressed }) => [styles.controlButton, pressed && styles.controlButtonPressed]}
+              accessibilityLabel="Baştan başla"
+              hitSlop={8}
+              style={({ pressed }) => [styles.linkButton, pressed && styles.linkButtonPressed]}
             >
-              <Ionicons name="refresh-outline" size={22} color={COURSE_BRAND.primary} />
-            </Pressable>
-            <Pressable
-              onPress={showHint}
-              accessibilityLabel="İpucu"
-              hitSlop={4}
-              style={({ pressed }) => [styles.controlButton, styles.hintButton, pressed && styles.controlButtonPressed]}
-            >
-              <Ionicons name="help-outline" size={22} color={COURSE_BRAND.accent} />
+              <RotateCcw size={13} color={COURSE_BRAND.muted} />
+              <Text style={[styles.linkButtonText, { color: COURSE_BRAND.muted }]}>Baştan başla</Text>
             </Pressable>
             {pausePhase === 'beforeOpponent' && (
               <Pressable
@@ -925,7 +923,7 @@ export default function GoBoard({
                 accessibilityLabel="Devam"
                 style={({ pressed }) => [styles.continueButton, pressed && styles.controlButtonPressed]}
               >
-                <Ionicons name="play" size={16} color="#fff" />
+                <Play size={14} color="#fff" fill="#fff" />
                 <Text style={styles.continueButtonText}>Devam</Text>
               </Pressable>
             )}
@@ -1012,54 +1010,50 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
   },
-  turnBadge: {
+  turnIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: COURSE_BRAND.accentBorder,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    gap: 6,
   },
-  turnStone: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  turnDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.7)',
   },
   turnText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
     color: COURSE_BRAND.muted,
+  },
+  turnTextSolved: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4C9A6A',
   },
   controlGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    gap: 16,
   },
-  controlButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: 'rgba(10, 37, 64, 0.14)',
+  linkButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
   },
-  hintButton: {
-    borderColor: COURSE_BRAND.accentBorder,
-    backgroundColor: COURSE_BRAND.accentSoft,
+  linkButtonPressed: {
+    opacity: 0.6,
+  },
+  linkButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   controlButtonPressed: {
     opacity: 0.82,
-    backgroundColor: COURSE_BRAND.pathTrack,
   },
   continueButton: {
     minHeight: 48,
