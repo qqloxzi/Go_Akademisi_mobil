@@ -1,0 +1,35 @@
+import 'react-native-url-polyfill/auto';
+import { createClient } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+/**
+ * Web (agoragoakademisi.com) ile birebir aynı Supabase projesi — aynı auth
+ * kullanıcı havuzu, aynı tablolar. EXPO_PUBLIC_SUPABASE_URL / ANON_KEY .env'de.
+ */
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY as string;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('[Supabase] Env variables are not set. Check .env file.');
+}
+
+const isServerSideWeb =
+  Platform.OS === 'web' &&
+  typeof window === 'undefined' &&
+  typeof document === 'undefined';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: isServerSideWeb
+    ? {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      }
+    : {
+        storage: AsyncStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: Platform.OS === 'web',
+      },
+});
